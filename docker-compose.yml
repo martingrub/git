@@ -1,0 +1,142 @@
+version: '2'
+
+services:
+  
+  squid:
+          #image: joaniznardo/ubuntum7base
+    image: joaniznardo/ubuntum7proxy01
+    hostname: squidhost
+    container_name: squidcont 
+    ##    cap_add:
+    ##  - NET_ADMIN
+    ##  - SYS_ADMIN
+    ports:      
+      - '80:80'
+      - '443:443'
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - './squid3:/etc/squid3:ro'
+        #     - './sites-available:/etc/apache2/sites-available:ro'
+    extra_hosts: &llistahosts
+      - www.ichigo.com:10.28.1.100        
+      - www.bell.com:10.28.1.100        
+      - www.souma.com:10.28.1.100
+      - www.levi.com:10.28.1.100        
+      - www.sora.com:10.28.1.100        
+      - www.yato.com:10.28.1.100      
+    networks:
+      x1:
+        ipv4_address: 10.28.1.90
+
+  apache:
+    image: joaniznardo/ubuntum7http
+    hostname: webserver
+    container_name: webserver
+    ##    cap_add:
+    ##  - NET_ADMIN
+    ##  - SYS_ADMIN
+    #    ports:      
+    #  - '80:80'
+    #  - '443:443'
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - './www:/var/www:ro'
+      - './sites-available:/etc/apache2/sites-available:ro'
+     extra_hosts: &llistahosts
+      - www.ichigo.com:10.28.1.100        
+      - www.bell.com:10.28.1.100        
+      - www.souma.com:10.28.1.100    
+    networks:
+      x1:
+        ipv4_address: 10.28.1.100
+   
+   apache2:
+    image: joaniznardo/ubuntum7http
+    hostname: webserver2
+    container_name: webserver2
+    ##    cap_add:
+    ##  - NET_ADMIN
+    ##  - SYS_ADMIN
+    #    ports:      
+    #  - '80:80'
+    #  - '443:443'
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - './www:/var/www:ro'
+      - './sites-available:/etc/apache2/sites-available:ro'
+      extra_hosts: &llistahosts
+      - www.levi.com:10.28.1.100        
+      - www.sora.com:10.28.1.100        
+      - www.yato.com:10.28.1.100      
+    networks:
+      x1:
+        ipv4_address: 10.28.1.101
+
+  textclient1:
+    image: joaniznardo/ubuntum7base
+    hostname: textclient1
+    container_name: textclient_cont
+    domainname: lab42
+    extra_hosts: *llistahosts
+    networks:
+      x1:
+        ipv4_address: 10.28.1.97 
+   textclient2:
+    image: joaniznardo/ubuntum7base
+    hostname: textclient2
+    container_name: textclient_cont
+    domainname: lab42
+    extra_hosts: *llistahosts
+    networks:
+      x1:
+        ipv4_address: 10.28.1.96
+   
+   textclient3:
+    image: joaniznardo/ubuntum7base
+    hostname: textclient3
+    container_name: textclient_cont
+    domainname: lab42
+    extra_hosts: *llistahosts
+    networks:
+      x1:
+        ipv4_address: 10.28.1.95
+
+  firefox:
+    image: jlesage/firefox
+    hostname: firefox
+    container_name: firefox
+    environment:
+      - FF_PREF_HTTP_PROXY=network.proxy.http=10.28.1.90:3128
+      - PROXY=10.28.1.90:3128
+      - HTTP_PROXY=10.28.1.90:3128
+      - HTTPS_PROXY=10.28.1.90:3128
+      - http_proxy=10.28.1.90:3128
+      - https_proxy=10.28.1.90:3128
+    extra_hosts: *llistahosts
+    ports:
+#novnc - web enabled remote desktop            
+      - '5800:5800'
+#vnc directe          
+      - '5900:5900'
+
+## config temporal
+    volumes:
+      - './firefox:/config:rw'
+        #    tmpfs:
+        #- '/config:rw'
+
+    networks:
+      x1:
+        ipv4_address: 10.28.1.98 
+
+networks:
+  x1:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.28.1.0/24
+          ##        ip_range: 10.28.1.0/30
+          gateway: 10.28.1.1
+          aux_addresses:
+            host1: 10.28.1.2
+            host2: 10.28.1.3
